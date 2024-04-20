@@ -1,4 +1,4 @@
-# uvicorn main:app
+# python -m uvicorn main:app --reload
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,10 +8,13 @@ app = FastAPI()
 
 origins = [
     "http://localhost:5173",
+    "https://localhost:5173",
+    "http://localhost:5174",
     "https://localhost:5174",
-    "127.0.0.1/5173",
-    "127.0.0.1/5174",
-
+    "http://127.0.0.1:5173",
+    "https://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "https://127.0.0.1:5174",
 ]
 
 app.add_middleware(
@@ -28,7 +31,7 @@ async def read_pdf(pdf_file: UploadFile = File(...)):
     try:
         # contents = await pdf_file.read()
         item = tabula.read_pdf(pdf_file.file, pages='all')
-        print(item[0])
+        # print(item[0])
         if item:
             return item[0]
         else:
