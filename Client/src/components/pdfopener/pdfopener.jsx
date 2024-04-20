@@ -13,7 +13,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 const Pdfopener = (prop) => {
   const [numPages, setNumPages] = useState();
   const [pageNumber, setPageNumber] = useState(1);
-  const [file, setFile] = useState(pdfval);
+  const [file, setFile] = useState(prop.val);
   const loadsuccess = () => {
     setNumPages(numPages);
   };

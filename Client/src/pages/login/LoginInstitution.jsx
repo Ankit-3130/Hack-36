@@ -21,8 +21,8 @@ const LoginPageInstitution = () => {
   const handleLogin = () => {
     // Here you can implement your login logic
     // For demonstration purposes, let's consider login successful if Aadhar number and DOB are not empty
-    if (aadharNumber.trim() !== "" && dob) {
-      setLoggedIn(true);
+    if (userId.trim() !== "") {
+      
       navigate('/admindashboard');
     } else {
       alert("Please enter a valid Aadhar number and date of birth.");

@@ -31,6 +31,7 @@ async def read_pdf(pdf_file: UploadFile = File(...)):
     try:
         # contents = await pdf_file.read()
         item = tabula.read_pdf(pdf_file.file, pages='all')
+        # print(item[0])
         if item:
             return item[0]
         else:
