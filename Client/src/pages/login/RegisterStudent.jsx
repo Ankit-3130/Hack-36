@@ -3,12 +3,17 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import { CFormFloating, CFormLabel, CFormInput, CFormRange, CFormSelect } from '@coreui/react';
 import Loader from "../../components/loaders/loader";
+import { Appstate } from "../../contextApi";
+import { ethers } from "ethers";
+import styled from "styled-components";
+import axios from "axios";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "./styles.css";
 import "./registerStudent.css";
 import "bootstrap/dist/css/bootstrap.min.css"
 import 'react-tooltip/dist/react-tooltip.css'
+import StudentRecords from "../../abiJson/studentRecords.json"
 
 
 
@@ -16,25 +21,85 @@ const RegisterStudent = () => {
     const navigate = useNavigate();
     const [name, setName] = useState("");
     const [aadharNumber, setAadharNumber] = useState(null);
-    const [dob, setDOB] = useState(null); // Change to null initially
+    const [image, setImage] = useState(); // Change to null initially
     const [qual, setQual] = useState(0); // highest qualification {0,1,2}
     const [loading, setLoading] = useState(true);
+    const { address, signer, rpcProvider } = Appstate();
 
     useEffect(() => {
         setLoading(false);
     }, []);
 
-    const handleRegister = () => {
-        // Here you can implement your register+login logic
-        // For demonstration purposes, let's consider login successful if Aadhar number and DOB are not empty
-        if (aadharNumber.trim() !== "" && dob) {
-            setLoggedIn(true);
-            // Redirect to student dashboard
-            navigate('/studentdashboard');
-        } else {
-            alert("Please enter a valid Aadhar number and date of birth.");
-        }
-    };
+    const ImageHandler = (e) => {
+        setImage(e.target.files[0]);
+    }
+
+    const uploadFiles = async (e) => {
+        e.preventDefault();
+        //setUploadLoading(true);
+    
+    
+          if(image !== null) {
+              try {
+                 const fileData=new FormData();
+                 fileData.append("file",image);
+                 const responseData=await axios({
+                    method:"POST",
+                    url:"https://api.pinata.cloud/pinning/pinFileToIPFS",
+                    data:fileData,
+                    headers:{
+                        pinata_api_key:import.meta.env.VITE_REACT_APP_PINATA_KEY,
+                        pinata_secret_api_key:import.meta.env.VITE_REACT_APP_PINATA_SECRET_KEY,
+                        "content-type":"multipart/form-data",
+
+                    },
+                 })
+                 const url=`${responseData.data.IpfsHash}`;
+                 setImage(url);
+                 alert("image uploaded successfully");
+                 console.log(url);
+              } catch (error) {
+                console.log(error);
+              } 
+            }
+    }
+
+    const handleRegister = async (e) => {
+        e.preventDefault();
+
+            setLoading(true);
+
+            const pubAdd =import.meta.env.VITE_REACT_APP_PUBLIC_ADDRESS;
+
+
+            const contract = new ethers.Contract(
+                pubAdd,
+                StudentRecords.abi,
+                signer
+            );
+
+            const getAllStudents = contract.filters.studentCreated(null,aadharNumber);
+            const AllStudents = await contract.queryFilter(getAllStudents);
+            const condition2 = contract.filters.studentCreated(address);
+            const Condition2 = await contract.queryFilter(condition2);
+    
+            if (AllStudents.length > 0 || Condition2.length > 0) {
+                alert("Student Already Exist");
+                navigate('/studentdashboard');
+            } else {
+
+                const studentData = await contract.createStudentId(
+                    name,
+                    image,
+                    aadharNumber,
+                    qual
+                );
+
+                await studentData.wait();
+                navigate('/studentdashboard');
+            }
+
+        };
 
     return (
         <div className="flex items-center justify-center min-h-screen animate-gradient">
@@ -63,7 +128,7 @@ const RegisterStudent = () => {
                         </CFormFloating>
 
                         {/* DOB */}
-                        <div className="mb-4 ">
+                        {/* <div className="mb-4 ">
                             <DatePicker
                                 selected={dob}
                                 onChange={(date) => setDOB(date)}
@@ -71,7 +136,7 @@ const RegisterStudent = () => {
                                 placeholderText="Date of Birth"
                                 className="w-full p-2 border border-gray-300 rounded focus:outline-none"
                             />
-                        </div>
+                        </div> */}
                         {/* Highest Qualification */}
                         <CFormSelect
                             label="Highest Qualification:"
@@ -87,6 +152,17 @@ const RegisterStudent = () => {
                         />
 
                         {/* Submit button */}
+
+                        {/* image upload */}
+                        <label>Select Image</label>
+                        <input alt="dapp" onChange={ImageHandler} type={'file'} accept='' />
+                            
+                        
+
+                                <Button onClick={uploadFiles}>
+                                    Upload Files to IPFS
+                                </Button>
+                              
                         <button
                             onClick={handleRegister}
                             className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
@@ -100,4 +176,21 @@ const RegisterStudent = () => {
     );
 };
 
+const Button = styled.button`
+    display: flex;
+  justify-content:center;
+  width:30% ;
+  padding:15px ;
+  color:white ;
+  background-color:#00b712 ;
+  background-image:
+      linear-gradient(180deg, #00b712 0%, #5aff15 80%) ;
+  border:none;
+  margin-top:30px ;
+  cursor: pointer;
+  font-weight:bold ;
+  font-size:large ;
+`
 export default RegisterStudent;
+
+//https://gateway.pinata.cloud/ipfs

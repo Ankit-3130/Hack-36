@@ -12,13 +12,15 @@ import StudentDashboard from "./pages/studentDashboard";
 import AdminDashboard from "./pages/adminDashboard";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Loader from "./components/loaders/loader";
+import AppProvider from "./contextApi";
 
 function App() {
   return (
     <BrowserRouter>
+    <AppProvider>
       <Routes>
         {/* Login */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route path="/studentlogin" element={<LoginPageStudent />} />
         <Route path="/institutionlogin" element={<LoginPageInstitution />} />
         {/* Register */}
@@ -28,6 +30,7 @@ function App() {
         <Route path="/studentdashboard" element={<StudentDashboard />} />
         <Route path="/admindashboard" element={<AdminDashboard />} />
       </Routes>
+      </AppProvider>
     </BrowserRouter>
   );
 }

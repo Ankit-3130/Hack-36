@@ -5,6 +5,11 @@ import { useState } from "react";
 import { NavMenu } from "../../components/Navbar/Navbar";
 import Pdfopener from "../../components/pdfopener/pdfopener";
 import Loader from "../../components/loaders/loader";
+import { Appstate } from "../../contextApi";
+import StudentRecords from "../../abiJson/studentRecords.json"
+import Student from "../../abiJson/student.json"
+import { ethers } from "ethers";
+import styled from "styled-components";
 
 function Index() {
   const [name, setName] = useState("Student1");
@@ -16,11 +21,99 @@ function Index() {
   const [showtwelfth, setShowpdftwelfth] = useState(false);
   const [showCollege, setShowpdfCollege] = useState(false);
   const [loading, setLoading] = useState(true);
+  const course=["Class 10th","Class 12th","B.Tech"];
+  const [qual,setQual]=useState(0);
+  const [studentData,setStudentData]=useState([]);
+  const [certificates,setCertificates]=useState([]);
+  const {address,signer,rpcProvider}=Appstate();
+
 
   useEffect(() => {
-    // Fetch aadhar and name
+    
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+
+    const Request = async () => {
+      
+        const contract = new ethers.Contract(
+            import.meta.env.VITE_REACT_APP_PUBLIC_ADDRESS,
+            StudentRecords.abi,
+            rpcProvider
+        );
+        console.log(rpcProvider);
+        const getAllStudents = contract.filters.studentCreated(address);
+        const AllStudents = await contract.queryFilter(getAllStudents);
+        
+        const AllData = AllStudents.map((e) => {
+            return {
+
+
+                owner: e.args.owner,
+                studentId: e.args.studentId,
+                hexStudentId:e.args.hexStudentId,
+                uptoQual:e.args.uptoQual.toNumber(),
+                name: e.args.name,
+                imgURL:e.args.dob,
+                aadhar:e.args._aadhar,
+
+            }
+        })
+        setStudentData(AllData);
+        console.log(AllData);
+        setName(AllData[0].name);
+        setQual(AllData[0].uptoQual);
+    }
+    Request();
+}, [address])
+
+const registerCourse=async ()=>{
+ 
+      const pubAdd=import.meta.env.VITE_REACT_APP_PUBLIC_ADDRESS;
+      const contract = new ethers.Contract(
+          pubAdd,
+          StudentRecords.abi,
+          signer
+      );
+
+
+      const studentData1 = await contract.register(
+          studentData[0].name,
+          studentData[0].imgURL,
+          studentData[0].uptoQual,
+          studentData[0].studentId
+      );
+
+      await studentData1.wait();
+}
+
+useEffect(()=>{
+  const getCertificate = async () => {
+ 
+    const contract = new ethers.Contract(
+        studentData[0].hexStudentId,
+        Student.abi,
+        rpcProvider
+    );
+  
+    const getAllCertificates = contract.filters.certificateUploaded();
+    const AllCertificates = await contract.queryFilter(getAllCertificates);
+  
+  
+    const AllData = AllCertificates.map((e) => {
+        return {
+            course:e.args.course.toNumber(),
+            url:e.args.url
+        }
+    })
+    console.log(AllData);
+    setCertificates([...AllData]);
+    
+  }
+  getCertificate();
+},[])
+
 
   return (
     <>
@@ -29,7 +122,9 @@ function Index() {
         :
         <div className=" animate-gradient3 h-full w-full p-4">
           <NavMenu User={name} Aadhar={aadhar} />
-
+          
+          {/* register for course button */}
+          <Button onClick={()=>{registerCourse()}}>register for ${course[qual+1]} </Button>
           <div className="p-4 ">
 
             {/* Class 10th */}
@@ -85,8 +180,9 @@ function Index() {
                 </div>
                 <div className="m-3" style={{ borderRadius: '10px', overflow: 'hidden' }}>
                   {showtenth && (
-                    <div className="h-64 overflow-x-scroll overflow-y-scroll ">
-                      <Pdfopener />
+                    <div className="w-full flex justify-center items-center overflow-x-scroll  ">
+                      {/* <Pdfopener /> */}
+                      <iframe src={`https://gateway.pinata.cloud/ipfs/${certificates[0].url}`} width={1000}/>
                     </div>
                   )}
                 </div>
@@ -94,7 +190,7 @@ function Index() {
             )}
 
             {/* Class 12th */}
-            {twelfth && (
+            {/* {twelfth && (
               <div className="bg-gray-800 text-white flex-col border-black rounded-3xl mb-8 pb-2">
                 <div className="p-4 border-black  flex justify-center text-3xl">
                   <div className="bg-blue-600 w-80 flex justify-center rounded-full">
@@ -152,10 +248,10 @@ function Index() {
                   )}
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* College */}
-            {college && (
+            {/* {college && (
               <div className="bg-gray-800 text-white flex-col border-black rounded-3xl mb-8 pb-2">
                 <div className="p-4 border-black  flex justify-center text-3xl">
                   <div className="bg-blue-900 w-80 flex justify-center rounded-full">
@@ -214,7 +310,7 @@ function Index() {
                 </div>
               </div>
 
-            )}
+            )} */}
           </div>
         </div>
       }
@@ -222,4 +318,19 @@ function Index() {
   );
 }
 
+const Button = styled.button`
+    display: flex;
+  justify-content:center;
+  width:30% ;
+  padding:15px ;
+  color:white ;
+  background-color:#00b712 ;
+  background-image:
+      linear-gradient(180deg, #00b712 0%, #5aff15 80%) ;
+  border:none;
+  margin-top:30px ;
+  cursor: pointer;
+  font-weight:bold ;
+  font-size:large ;
+`
 export default Index;

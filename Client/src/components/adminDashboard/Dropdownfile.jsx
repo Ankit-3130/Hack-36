@@ -2,6 +2,12 @@ import React, { useState } from "react";
 import Pdfopener from "../pdfopener/pdfopener";
 import TableFromJSON from "../jsontotable/jsonToTable";
 import { readPdf } from "../../utils/pdfExtract";
+import { useEffect } from "react";
+import StudentRecords from "../../abiJson/studentRecords.json"
+import Student from "../../abiJson/student.json"
+import { Appstate } from "../../contextApi";
+import {ethers} from "ethers";
+import axios from "axios";
 
 const StudentDropdown = () => {
   const [selectedLabel, setSelectedLabel] = useState(null);
@@ -9,18 +15,83 @@ const StudentDropdown = () => {
   const [file, setFile] = useState(null);
   const [submittedDocuments, setSubmittedDocuments] = useState({});
   const [jsondata, setJsondata] = useState(null);
-
+  const [tenth,setTenth]=useState([]);
+  const [twelfth,setTwelfth]=useState([]);
+  const [college,setCollege]=useState([]);
+  const {address,signer,rpcProvider}=Appstate();
+  const [students,setStudents]=useState({
+    "10th": [],
+    "12th": [],
+    "College": [],
+  })
   const labels = ["10th", "12th", "College"];
 
-  const students = {
-    "10th": ["Student 1", "Student 2", "Student 3"],
-    "12th": ["Student 4", "Student 5", "Student 6"],
-    College: ["Student 7", "Student 8", "Student 9"],
-  };
+  // const students = {
+  //   "10th": [],
+  //   "12th": [],
+  //   "College": [],
+  // };
+
+  useEffect(()=>{
+    const Request = async () => {
+      
+      
+      const contract = new ethers.Contract(
+          import.meta.env.VITE_REACT_APP_PUBLIC_ADDRESS,
+           StudentRecords.abi,
+          rpcProvider
+      );
+
+      const getAllStudents = contract.filters.studentRegistered();
+      const AllStudents = await contract.queryFilter(getAllStudents);
+      console.log(AllStudents);
+      const AllData = AllStudents.map((e) => {
+          return {
+              owner: e.args.owner,
+              studentId: e.args.studentId,
+              course:Number(e.args.course),
+              name: e.args.name,
+              imgURL:e.args.dob,
+              timeStamp: parseInt(e.args.timestamp),
+
+          }
+      });
+      console.log(AllData);
+      const updatedStudents = {
+        "10th": [],
+        "12th": [],
+        "College": [],
+      };
+      AllData.forEach(obj => {
+        
+        if (obj.course === 0) {
+          updatedStudents["10th"] = [...updatedStudents["10th"], `${obj.studentId}`];
+        } else if (obj.course === 1) {
+          updatedStudents["12th"] = [...updatedStudents["12th"],   `${obj.studentId}`];
+
+        } else {
+          updatedStudents["College"] = [...updatedStudents["College"], `${obj.studentId}`];
+
+        }
+    });
+    
+
+// Update the "10th" array in the new object
+//updatedStudents["10th"] = [...updatedStudents["10th"], newValue]; // newValue is the value you want to add
+
+// Update the state with the new object
+setStudents(updatedStudents);
+  }
+  Request();
+  },[])
+
+
+
   const [viewfile, setViewFile] = useState(false);
 
   const handleLabelChange = (label) => {
     setSelectedLabel(label);
+    // alert(label)
     setSelectedStudent(null);
     setFile(null);
   };
@@ -38,10 +109,46 @@ const StudentDropdown = () => {
     setJsondata(jsonvalue);
   };
 
-  const handleFileSubmit = () => {
+  const handleFileSubmit = async () => {
     // Here you can implement logic to save the file for the selected student
     console.log(`File for ${selectedStudent} (${selectedLabel}):`, file);
     // Reset selected student and file after submission
+    if(file !== null) {
+      try {
+         const fileData=new FormData();
+         fileData.append("file",file);
+         const responseData=await axios({
+            method:"POST",
+            url:"https://api.pinata.cloud/pinning/pinFileToIPFS",
+            data:fileData,
+            headers:{
+                pinata_api_key:import.meta.env.VITE_REACT_APP_PINATA_KEY,
+                pinata_secret_api_key:import.meta.env.VITE_REACT_APP_PINATA_SECRET_KEY,
+                "content-type":"multipart/form-data",
+
+            },
+         })
+         const url=`${responseData.data.IpfsHash}`;
+         const contract = new ethers.Contract(selectedStudent, Student.abi, signer);
+         console.log(contract);
+       const qual=await contract.qualification();
+       console.log(qual);
+
+       const studentData = await contract.feedData(
+        qual,
+        url
+    );
+    await studentData.wait();
+
+   
+    
+
+      } catch (error) {
+        console.log(error);
+      } 
+    }
+    
+
     setSelectedStudent(null);
     setFile(null);
     // Update submittedDocuments state
