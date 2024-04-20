@@ -9,11 +9,13 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "https://localhost:5173",
+     "http://localhost:5174",
+    "https://localhost:5174",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://127.0.0.1:5174", "http://localhost:5173", "https://localhost:5173"],
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
@@ -25,6 +27,7 @@ async def read_pdf(pdf_file: UploadFile = File(...)):
     try:
         # contents = await pdf_file.read()
         item = tabula.read_pdf(pdf_file.file, pages='all')
+        print(item[0])
         if item:
             return item[0]
         else:
