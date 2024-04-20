@@ -1,0 +1,26 @@
+.home-card {
+    width: 95%;
+    height: 75%;
+    margin: auto;
+}
+
+@media (min-width: 640px) {
+    .home-card {
+        width: 50%;
+        height: 75%;
+    }
+}
+
+@media (min-width: 768px) {
+    .home-card {
+        width: 50%;
+        height: 75%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .home-card {
+        width: 50%;
+        height: 75%;
+    }
+}
