@@ -9,7 +9,7 @@
 ThalaChain introduces a groundbreaking solution by harnessing the power of blockchain technology to ensure the security and transparency of student records. By immutably recording academic achievements, certifications, and other relevant data on a decentralized ledger, ThalaChain offers a secure and tamper-proof platform for verifying student information. Third-party applications can seamlessly access this verified data through our platform, guaranteeing the authenticity and accuracy of student credentials. With ThalaChain , we aim to combat fraud in education effectively while upholding the principles of integrity and reliability.
 
 ## Demo Video Link:
-
+<a href="https://youtu.be/SlGaucj9Ncs"> Video Link Here</a>
 <a href="https://youtu.be/OgoTRCihLBw"> Video Link Here </a>
 ## Demo PPT Link:
 <a href="https://docs.google.com/presentation/d/1e1liWH7eLy_hKkHDX6MhU95mzDJ3dz40RAieYXARVfM/edit?usp=sharing"> PPT Link Here </a>
