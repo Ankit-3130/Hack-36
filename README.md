@@ -17,7 +17,7 @@ Welcome to "Thala Chain !", a revolutionary blockchain and React-based data secu
 
 ## 1) Technology Stack:
 1) Solidity
-<img width="943" alt="image" src="https://github.com/Ankit-3130/Hack-36/assets/114815742/505e686e-913b-4ff8-b7ce-3aa17680f11b"/>
+<img width="800" hieght="400" alt="image" src="https://github.com/Ankit-3130/Hack-36/assets/114815742/505e686e-913b-4ff8-b7ce-3aa17680f11b"/>
 
    
 2) hardhat
