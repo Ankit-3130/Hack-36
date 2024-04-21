@@ -16,5 +16,34 @@ Welcome to "Thala Chain !", a revolutionary blockchain and React-based data secu
 ## Table of Contents:
 
 ## 1) Technology Stack:
+1) Solidity
+  ![solidity](https://github.com/Ankit-3130/Hack-36/assets/114815742/505e686e-913b-4ff8-b7ce-3aa17680f11b)
 
+   
+2) hardhat
+![hardhat](https://github.com/Ankit-3130/Hack-36/assets/114815742/290492bb-c0da-4c88-b8ab-d301dfc37068)
+
+
+3) Metamask
+![download](https://github.com/Ankit-3130/Hack-36/assets/114815742/c1185053-bdc2-4cdb-8d3e-737ff18aa835)
+
+
+  
+4) Ether.js
+![download](https://github.com/Ankit-3130/Hack-36/assets/114815742/2e9eccf1-5514-4767-b437-18ce06eab1c0)
+
+  
+5) Node.js
+
+![download](https://github.com/Ankit-3130/Hack-36/assets/114815742/ae957c3d-3747-4924-9496-c66a5c6e6bcd)
+
+
+6) Tailwind css
+![download](https://github.com/Ankit-3130/Hack-36/assets/114815742/5e74f725-6ed5-4342-88ba-3794db7ffa0b)
+
+
+
+7) Vite + React
+
+![download](https://github.com/Ankit-3130/Hack-36/assets/114815742/05e49b41-9254-4a85-8769-8d478bb964cb)
 
