@@ -11,6 +11,7 @@ import Student from "../../abiJson/student.json"
 import { ethers } from "ethers";
 import styled from "styled-components";
 import TableFromJSON from "../../components/jsontotable/jsonToTable";
+import { readPdf, readPdffromUrl } from "../../utils/pdfExtract";
 
 function Index() {
   const [name, setName] = useState("Student1");
@@ -27,6 +28,8 @@ function Index() {
   const [studentData, setStudentData] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const { address, signer, rpcProvider } = Appstate();
+  const [result0, setResult0] = useState(null); // 10th
+  const [result1, setResult1] = useState(null); // 12th
 
 
   useEffect(() => {
@@ -138,16 +141,10 @@ function Index() {
   }
 
   const fetch10thResultJson = async () => {
-    console.log('10th result fetch started');
-    let data = await fetch("http://127.0.0.1:8000/readpdfurl", {
-      method: "POST",
-      body: JSON.stringify(`https://gateway.pinata.cloud/ipfs/${certificates[0].url}`),
-      credentials: 'include',
-    });
-    // console.log(data);
-
-    let body = await data.clone().json();
-    console.log(body);
+    const url = `https://gateway.pinata.cloud/ipfs/${certificates[0].url}`;
+    // read pdf from url
+    let results = await readPdffromUrl(url);
+    setResult0(results);
   }
 
 
@@ -223,12 +220,7 @@ function Index() {
                 <div className="m-3" style={{ borderRadius: '10px', overflow: 'hidden' }}>
                   {showtenth && (
                     <div className="w-full flex justify-center items-center overflow-x-auto  ">
-                      <TableFromJSON jsonvalue={[
-                        { "Subject Name:": "English", "Subject-Code:": "eng", "Marks": 40 },
-                        { "Subject Name:": "Maths", "Subject-Code:": "mat", "Marks": 54 },
-                        { "Subject Name:": "Science", "Subject-Code:": "sci", "Marks": 42 },
-                        { "Subject Name:": "Hindi", "Subject-Code:": "hin", "Marks": 67 }
-                      ]} />
+                      <TableFromJSON jsonvalue={result0} />
                       {/* <Pdfopener /> */}
                       {/* <iframe src={`https://gateway.pinata.cloud/ipfs/${certificates[0].url}`} width={1000} /> */}
                       {/* <iframe src={`https://gateway.pinata.cloud/ipfs/QmXdh2LPSenKtrDzbPzYW1m5UWxJ2AJrPC1ZJR9hd9tU3d`} width={1000} /> */}
