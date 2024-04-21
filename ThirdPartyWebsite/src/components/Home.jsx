@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { ethers } from "ethers";
 
 function Home() {
     const [formData, setFormData] = useState([{ subject: "", "subject code": "", marks: "" }]);
@@ -9,6 +10,30 @@ function Home() {
         { subject: "maths", "subject code": "mat", marks: 84 },
         { subject: "maths", "subject code": "mat", marks: 84 },
         ]);
+    }
+
+    const [address, setAddress] = useState();
+    const [details, setDetails] = useState([]);
+    const course = ["Class 10th", "Class 12th", "B.Tech"];
+    useEffect(() => {
+        const Request = async () => {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const Web3provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = Web3provider.getSigner();
+            const Address = await signer.getAddress();
+            setAddress(Address);
+        }
+        Request();
+    }, [])
+
+    const getDetails = async () => {
+        fetch(`http://localhost:8080/getRecords/${address}`, {
+            method: "GET"
+        }).then((res) => {
+            setDetails(res.data);
+            console.log(res.details);
+            setFormData(res.details);
+        })
     }
 
     return (

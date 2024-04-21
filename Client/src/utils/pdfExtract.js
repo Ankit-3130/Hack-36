@@ -1,13 +1,13 @@
 export async function readPdf(file) {
-
     const formData = new FormData();
     formData.append('pdf_file', file);
 
-    let data = await fetch("http://localhost:8000/readpdf", {
+    let data = await fetch("http://127.0.0.1:8000/readpdf", {
         method: "POST",
         body: formData,
         credentials: 'include',
     });
+    console.log(data);
 
     let body = await data.clone().json();
 

@@ -22,6 +22,7 @@ const RegisterStudent = () => {
     const [name, setName] = useState("");
     const [aadharNumber, setAadharNumber] = useState(null);
     const [image, setImage] = useState(); // Change to null initially
+    const [imageUploaded, setImageUploaded] = useState(false); // Change to null initially
     const [qual, setQual] = useState(0); // highest qualification {0,1,2}
     const [loading, setLoading] = useState(true);
     const { address, signer, rpcProvider } = Appstate();
@@ -37,69 +38,70 @@ const RegisterStudent = () => {
     const uploadFiles = async (e) => {
         e.preventDefault();
         //setUploadLoading(true);
-    
-    
-          if(image !== null) {
-              try {
-                 const fileData=new FormData();
-                 fileData.append("file",image);
-                 const responseData=await axios({
-                    method:"POST",
-                    url:"https://api.pinata.cloud/pinning/pinFileToIPFS",
-                    data:fileData,
-                    headers:{
-                        pinata_api_key:import.meta.env.VITE_REACT_APP_PINATA_KEY,
-                        pinata_secret_api_key:import.meta.env.VITE_REACT_APP_PINATA_SECRET_KEY,
-                        "content-type":"multipart/form-data",
+
+
+        if (image !== null) {
+            try {
+                const fileData = new FormData();
+                fileData.append("file", image);
+                const responseData = await axios({
+                    method: "POST",
+                    url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
+                    data: fileData,
+                    headers: {
+                        pinata_api_key: import.meta.env.VITE_REACT_APP_PINATA_KEY,
+                        pinata_secret_api_key: import.meta.env.VITE_REACT_APP_PINATA_SECRET_KEY,
+                        "content-type": "multipart/form-data",
 
                     },
-                 })
-                 const url=`${responseData.data.IpfsHash}`;
-                 setImage(url);
-                 alert("image uploaded successfully");
-                 console.log(url);
-              } catch (error) {
+                })
+                const url = `${responseData.data.IpfsHash}`;
+                setImage(url);
+                setImageUploaded(true);
+                alert("image uploaded successfully");
+                console.log(url);
+            } catch (error) {
                 console.log(error);
-              } 
             }
+        }
     }
 
     const handleRegister = async (e) => {
         e.preventDefault();
 
-            setLoading(true);
+        setLoading(true);
 
-            const pubAdd =import.meta.env.VITE_REACT_APP_PUBLIC_ADDRESS;
+        const pubAdd = import.meta.env.VITE_REACT_APP_PUBLIC_ADDRESS;
 
 
-            const contract = new ethers.Contract(
-                pubAdd,
-                StudentRecords.abi,
-                signer
+        const contract = new ethers.Contract(
+            pubAdd,
+            StudentRecords.abi,
+            signer
+        );
+
+        const getAllStudents = contract.filters.studentCreated(null, aadharNumber);
+        const AllStudents = await contract.queryFilter(getAllStudents);
+        const condition2 = contract.filters.studentCreated(address);
+        const Condition2 = await contract.queryFilter(condition2);
+
+        if (AllStudents.length > 0 || Condition2.length > 0) {
+            alert("Student Already Exist");
+            navigate('/studentdashboard');
+        } else {
+
+            const studentData = await contract.createStudentId(
+                name,
+                image,
+                aadharNumber,
+                qual
             );
 
-            const getAllStudents = contract.filters.studentCreated(null,aadharNumber);
-            const AllStudents = await contract.queryFilter(getAllStudents);
-            const condition2 = contract.filters.studentCreated(address);
-            const Condition2 = await contract.queryFilter(condition2);
-    
-            if (AllStudents.length > 0 || Condition2.length > 0) {
-                alert("Student Already Exist");
-                navigate('/studentdashboard');
-            } else {
+            await studentData.wait();
+            navigate('/studentdashboard');
+        }
 
-                const studentData = await contract.createStudentId(
-                    name,
-                    image,
-                    aadharNumber,
-                    qual
-                );
-
-                await studentData.wait();
-                navigate('/studentdashboard');
-            }
-
-        };
+    };
 
     return (
         <div className="flex items-center justify-center min-h-screen animate-gradient">
@@ -154,21 +156,33 @@ const RegisterStudent = () => {
                         {/* Submit button */}
 
                         {/* image upload */}
-                        <label>Select Image</label>
-                        <input alt="dapp" onChange={ImageHandler} type={'file'} accept='' />
-                            
-                        
+                        <label>Select Image:</label>
+                        <input alt="dapp" onChange={ImageHandler} type={'file'} accept=''
+                            className="mb-1"
+                        />
 
-                                <Button onClick={uploadFiles}>
-                                    Upload Files to IPFS
-                                </Button>
-                              
-                        <button
-                            onClick={handleRegister}
-                            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-                        >
-                            Confirm
+
+
+                        <button onClick={uploadFiles}
+                            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 mb-3">
+                            Upload Files to IPFS
                         </button>
+
+                        {imageUploaded ?
+                            <button
+                                onClick={handleRegister}
+                                className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                            >
+                                Confirm
+                            </button>
+                            :
+                            <button disabled
+                                onClick={handleRegister}
+                                className="w-full bg-gray-500 text-white py-2 rounded"
+                            >
+                                Confirm
+                            </button>
+                        }
                     </div>
                 </div>
             }
